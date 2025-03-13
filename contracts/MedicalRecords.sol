@@ -71,6 +71,34 @@ contract MedicalRecords {
             _sha256Hash
         );
     }
+    function uploadPrescription(
+        string memory _fileName,
+        string memory _fileType,
+        string memory _ipfsHash,
+        bytes32 _sha256Hash,
+        address _patient
+    ) public onlyRegistered {
+    
+
+        patientRecords[_patient].push(
+            Record(
+                _fileName,
+                _fileType,
+                _ipfsHash,
+                _sha256Hash,
+                _patient,
+                false
+            )
+        );
+
+        emit RecordUploaded(
+            _patient,
+            _fileName,
+            _fileType,
+            _ipfsHash,
+            _sha256Hash
+        );
+    }
 
     function grantAccess(address _doctor) public onlyRegistered {
         require(
@@ -98,5 +126,30 @@ contract MedicalRecords {
         );
 
         return patientRecords[_patient];
+    }
+
+
+    function getAccessList(
+        address _patient
+    ) public view onlyRegistered returns (address[] memory) {
+   
+
+        address[] memory allDoctors = userRegistry.getDoctors();
+        uint count = 0;
+        address[] memory tempList = new address[](allDoctors.length);
+
+        for (uint i = 0; i < allDoctors.length; i++) {
+            if (accessPermissions[_patient][allDoctors[i]]) {
+                tempList[count] = allDoctors[i];
+                count++;
+            }
+        }
+
+        address[] memory accessList = new address[](count);
+        for (uint j = 0; j < count; j++) {
+            accessList[j] = tempList[j];
+        }
+
+        return accessList;
     }
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import ViewRecords from "./ViewRecords";
+import AddPrescription from "./AddPrescription";
 
 const PatientManager = () => {
   const [selectedOption, setSelectedOption] = useState("add");
@@ -31,7 +32,7 @@ const PatientManager = () => {
 
       {/* Right Content Area */}
       <main className="flex-1 p-4 bg-gray-50">
-        {/* {selectedOption === "add" && <AddPrescription />} */}
+        {selectedOption === "add" && <AddPrescription />}
         {selectedOption === "view" && <ViewRecords/>}
         {/* {selectedOption === "access" && <RequestAccess />} */}
       </main>

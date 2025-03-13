@@ -6,6 +6,7 @@ const registerRouter = require("./routes/register");
 const loginRouter = require("./routes/login");
 const challengeRouter = require("./routes/challenge");
 const uploadFileRouter = require("./routes/uploadFile");
+const fetchRecordRouter=require("./routes/fetchRecord")
 
 
 const app = express();
@@ -28,6 +29,7 @@ app.use("/register", registerRouter);
 app.use("/login",loginRouter)
 app.use("/challenge",challengeRouter)
 app.use("/upload",uploadFileRouter);
+app.use("/fetchData",fetchRecordRouter);
 app.listen(5000, () => {
     console.log("Server is running 3000");
   });

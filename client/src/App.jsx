@@ -4,19 +4,20 @@ import Login from "./Pages/Login";
 import HomePage from "./Pages/HomePage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Layout from "./Components/Layout";
-import DoctorLayout from "./Components/DoctorLayout"; // Import DoctorLayout
+import DoctorLayout from "./Components/DoctorLayout"; 
 import Navbar from "./Components/Navbar";
 import MedicalRecords from "./Pages/Patient/MedicalRecords";
 import PatientDashboard from "./Pages/Patient/PatientDashboard";
 import GrantAccess from "./Pages/Patient/GrantAccess";
 import PatientManager from "./Pages/Doctor/PatientManager";
 import RevokeAccess from "./Pages/Patient/RevokeAccess";
+import MyDoctors from "./Pages/Patient/MyDoctors";
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <Navbar /> {/* Navbar is always visible */}
+        <Navbar />
         <MainContent />
       </Router>
     </AuthProvider>
@@ -24,28 +25,21 @@ function App() {
 }
 
 function MainContent() {
-  const { user } = useAuth(); // Get user authentication status
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {user ? (
-        user.role === "patient" ? (
-          <Layout /> // Show Sidebar + Layout for patients
-        ) : (
-          <DoctorLayout /> // Show Sidebar + DoctorLayout for doctors
-        )
-      ) : null}
+      {user ? user.role === "patient" ? <Layout /> : <DoctorLayout /> : null}
 
       <div className="flex justify-center items-center">
         <Routes>
-          {!user ? ( // If not logged in, show login/signup
+          {!user ? (
             <>
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/" element={<Login />} /> {/* Default Route */}
+              <Route path="/" element={<Login />} />
             </>
           ) : (
-            // If logged in, show authenticated routes
             <>
               <Route path="/homepage" element={<HomePage />} />
               <Route path="/dashboard" element={<PatientDashboard />} />
@@ -53,19 +47,10 @@ function MainContent() {
                 path="/upload-medical-records"
                 element={<MedicalRecords />}
               />
-              <Route
-                path="/grant-access"
-                element={<GrantAccess />}
-              />
-              <Route
-                path="/revoke-access"
-                element={<RevokeAccess />}
-              />
-              <Route
-                path="/patient-manager"
-                element={<PatientManager />}
-              />
-              {/* Add other protected routes here */}
+              <Route path="/grant-access" element={<GrantAccess />} />
+              <Route path="/revoke-access" element={<RevokeAccess />} />
+              <Route path="/patient-manager" element={<PatientManager />} />
+              <Route path="/my-doctors" element={<MyDoctors />} />
             </>
           )}
         </Routes>

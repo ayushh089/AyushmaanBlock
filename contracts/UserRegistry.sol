@@ -8,6 +8,7 @@ contract UserRegistry {
     }
 
     mapping(address => User) public users;
+    address[] public doctors; // Store doctor addresses
     event UserRegistered(address indexed user, string userType);
 
     function registerUser(string memory _userType) public {
@@ -19,10 +20,10 @@ contract UserRegistry {
             "Invalid user type"
         );
 
-        users[msg.sender] = User({
-            userType: _userType,
-            registered: true
-        });
+        users[msg.sender] = User({userType: _userType, registered: true});
+        if (keccak256(abi.encodePacked(_userType)) == keccak256("doctor")) {
+            doctors.push(msg.sender); // Store doctor address
+        }
         emit UserRegistered(msg.sender, _userType);
     }
 
@@ -38,5 +39,9 @@ contract UserRegistry {
         return
             keccak256(abi.encodePacked(users[_user].userType)) ==
             keccak256("doctor");
+    }
+
+    function getDoctors() external view returns (address[] memory) {
+        return doctors;
     }
 }

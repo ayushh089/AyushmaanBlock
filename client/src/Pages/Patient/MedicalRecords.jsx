@@ -8,7 +8,7 @@ const MedicalRecords = () => {
   const { contract, account } = useMedicalRecord();
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileName, setFileName] = useState(""); // File name state
-  const [fileType, setFileType] = useState(""); // File type state
+  const [fileType, setFileType] = useState("Prescription"); // File type state
   const [ipfsHash, setIpfsHash] = useState(null);
   const [shaHash, setShaHash] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -202,7 +202,7 @@ const MedicalRecords = () => {
           )}
         </button>
       </form>
-
+{/* 
       <div>
         <button
           className="mt-4 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg"
@@ -212,7 +212,7 @@ const MedicalRecords = () => {
         </button>
 
         {url && <div>{url}</div>}
-      </div>
+      </div> */}
       <ToastContainer />
     </div>
   );
