@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { ethers } from "ethers";
-import { debounce } from "lodash"; // Install lodash if not already installed
+import { debounce } from "lodash"; 
 import useUserRegistry from "../hooks/useUserRegistry";
 import { useNavigate } from "react-router-dom";
 
@@ -13,11 +13,11 @@ export default function Signup() {
   const navigate = useNavigate();
   const formRef = useRef({
     name: "",
-    dob: "",
-    email: "",
-    phone: "",
-    gender: "Male",
-    password: "",
+    // dob: "",
+    // email: "",
+    // phone: "",
+    // gender: "Male",
+    // password: "",
     userType: "patient",
   });
 
@@ -42,26 +42,19 @@ export default function Signup() {
     if (!account) return alert("Please connect your wallet first!");
 
     try {
-      // const provider = new ethers.BrowserProvider(window.ethereum);
-      // const signer = await provider.getSigner();
-      // const isRegistered = await contract.isRegistered(
-      //   "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199"
-      // );
-      // console.log("account:", account);
-      // console.log("Is registered:", isRegistered);
 
       const offChainData = {
         name: formRef.current.name,
-        date_of_birth: formRef.current.dob,
-        email: formRef.current.email,
-        phone: formRef.current.phone,
-        gender: formRef.current.gender,
+        // date_of_birth: formRef.current.dob,
+        // email: formRef.current.email,
+        // phone: formRef.current.phone,
+        // gender: formRef.current.gender,
 
-        role: formRef.current.userType, // Include role from userType
+        role: formRef.current.userType, 
         wallet_address: account,
       };
 
-      console.log("Sending data:", offChainData); // Debugging the payload
+      console.log("Sending data:", offChainData); 
 
       const response = await axios.post(
         `${import.meta.env.VITE_BACKENDLINK}/register`,
@@ -107,7 +100,7 @@ export default function Signup() {
       {account && <p>Connected as: {account}</p>}
 
       <form onSubmit={handleSubmit} className="flex flex-col items-center">
-        {/* Name */}
+      
         <input
           type="text"
           name="name"
@@ -117,8 +110,7 @@ export default function Signup() {
           required
         />
 
-        {/* Date of Birth */}
-        <input
+        {/* <input
           type="date"
           name="dob"
           onChange={handleChange}
@@ -126,7 +118,6 @@ export default function Signup() {
           required
         />
 
-        {/* Email */}
         <input
           type="email"
           name="email"
@@ -136,7 +127,6 @@ export default function Signup() {
           required
         />
 
-        {/* Phone */}
         <input
           type="tel"
           name="phone"
@@ -146,7 +136,6 @@ export default function Signup() {
           required
         />
 
-        {/* Gender */}
         <select
           name="gender"
           onChange={handleChange}
@@ -158,7 +147,6 @@ export default function Signup() {
           <option value="Other">Other</option>
         </select>
 
-        {/* Password */}
         <input
           type="password"
           name="password"
@@ -166,9 +154,8 @@ export default function Signup() {
           onChange={handleChange}
           className="border px-4 py-2 mt-2 rounded w-80"
           required
-        />
+        /> */}
 
-        {/* User Type */}
         <select
           name="userType"
           onChange={handleChange}
@@ -177,7 +164,7 @@ export default function Signup() {
         >
           <option value="patient">Patient</option>
           <option value="doctor">Doctor</option>
-          <option value="hospital">Hospital</option>
+          <option value="pharmacist">Pharmacy</option>
         </select>
 
         <button

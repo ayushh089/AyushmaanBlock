@@ -80,18 +80,15 @@ contract PrescriptionRegistry {
 
         uint256 count = 0;
 
-        // First, count the prescriptions for the patient
         for (uint256 i = 1; i <= prescriptionCount; i++) {
             if (prescriptions[i].patient == _patient) {
                 count++;
             }
         }
 
-        // Create an array to store the prescriptions
         Prescription[] memory patientPrescriptions = new Prescription[](count);
         uint256 index = 0;
 
-        // Populate the array with the patient's prescriptions
         for (uint256 i = 1; i <= prescriptionCount; i++) {
             if (prescriptions[i].patient == _patient) {
                 patientPrescriptions[index] = prescriptions[i];

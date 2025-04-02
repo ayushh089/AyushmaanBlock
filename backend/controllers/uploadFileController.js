@@ -28,7 +28,7 @@ const uploadFileHandler = async (req, res) => {
                 },
             }
         );
-        log("Pinata response:", pinataResponse.data);
+        console.log("Pinata response:", pinataResponse.data);
 
         res.json({ IpfsHash: pinataResponse.data.IpfsHash });
     } catch (error) {

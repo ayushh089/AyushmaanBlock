@@ -9,19 +9,17 @@ const registrationHandler = async (req, res) => {
     console.log("Payload:", payload);
     
 
-    if (!payload || !payload.wallet_address || !payload.name || !payload.role || !payload.date_of_birth ) {
+    if (!payload || !payload.wallet_address || !payload.name || !payload.role  ) {
       return res
         .status(responseCode.badRequest)
         .json({ msg: "Missing required fields" });
     }
 
-    // Validate Role
     const validRoles = ["patient", "doctor", "admin", "pharmacist"];
     if (!validRoles.includes(payload.role)) {
       return res.status(responseCode.badRequest).json({ msg: "Invalid role" });
     }
 
-    // Check if wallet address already exists
     const existingUser = await Client.query(
       "SELECT * FROM users WHERE wallet_address = $1",
       [payload.wallet_address]
@@ -32,22 +30,32 @@ const registrationHandler = async (req, res) => {
         .json({ msg: "Wallet address already registered" });
     }
 
-    // Insert User
     const query = `
-            INSERT INTO users (wallet_address, name, email, phone, role, date_of_birth, gender) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7) 
+            INSERT INTO users (wallet_address, name,role) 
+            VALUES ($1, $2, $3) 
             RETURNING id;
         `;
 
     const values = [
       payload.wallet_address,
       payload.name,
-      payload.email || null,
-      payload.phone || null,
-      payload.role,
-      payload.date_of_birth || null,
-      payload.gender || null,
+      payload.role
     ];
+    // const query = `
+    //         INSERT INTO users (wallet_address, name, email, phone, role, date_of_birth, gender) 
+    //         VALUES ($1, $2, $3, $4, $5, $6, $7) 
+    //         RETURNING id;
+    //     `;
+
+    // const values = [
+    //   payload.wallet_address,
+    //   payload.name,
+    //   payload.email || null,
+    //   payload.phone || null,
+    //   payload.role,
+    //   payload.date_of_birth || null,
+    //   payload.gender || null,
+    // ];
 
     const newUser = await Client.query(query, values);
 console.log("Hey",newUser);

@@ -20,14 +20,12 @@ const loginHandler = async (req, res) => {
   }
 
   try {
-    // Verify the signature
     const recoveredAddress = ethers.verifyMessage(challengeMessage, signature);
 
     if (recoveredAddress.toLowerCase() !== walletAddress.toLowerCase()) {
       return res.status(401).json({ msg: "Invalid signature" });
     }
 
-    // Check if the wallet address exists in the database
     const user = await Client.query(
       "SELECT * FROM users WHERE wallet_address = $1",
       [walletAddress]
@@ -37,7 +35,6 @@ const loginHandler = async (req, res) => {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    // Create a session or token for the authenticated user
     const token = generateToken(user.rows[0].id);
 
     return res

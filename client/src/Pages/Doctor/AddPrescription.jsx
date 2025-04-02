@@ -1,19 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import signature from "../../assets/signature.png"; // Import signature image
+import axios from "axios"; // Import axios
 import useMedicalRecord from "../../hooks/useMedicalRecord";
 import usePrescriptionNFT from "../../hooks/usePrescriptionNFT";
 import { uploadToIPFS } from "../../utils/UploadToIPFS";
+import { useAuth } from "../../context/AuthContext";
 
 const AddPrescription = () => {
   const { contract, address } = useMedicalRecord();
+  const { user, setUser } = useAuth();
   const { contract: contractNFT, address: addressNFT } = usePrescriptionNFT();
   const [loading, setLoading] = useState(false);
   const [prescription, setPrescription] = useState({
     patientId: "",
-    doctorId: "",
+    patientName: "",
+    doctorId: user?.wallet_address || "",
+    doctorName: user?.name || "",
     timestamp: Date.now(),
     medicines: [{ name: "", dosage: "", frequency: "", duration: "" }],
     signature: "d58f3b4e2e9a...",
@@ -31,6 +36,27 @@ const AddPrescription = () => {
       setPrescription({ ...prescription, [e.target.name]: e.target.value });
     }
   };
+  useEffect(() => {
+    const fetchPatientName = async () => {
+      if (!prescription.patientId) return; // Prevent unnecessary API calls
+
+      try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_BACKENDLINK}/fetchData`,
+          { walletAddress: prescription.patientId }
+        );
+        console.log(response.data.name);
+        setPrescription((prev) => ({
+          ...prev,
+          patientName: response.data.name,
+        }));
+      } catch (error) {
+        console.error("Error fetching patient name:", error);
+      }
+    };
+
+    fetchPatientName();
+  }, [prescription.patientId]);
 
   const addMedicine = () => {
     setPrescription({
@@ -51,16 +77,21 @@ const AddPrescription = () => {
     try {
       setLoading(true);
       const ipfsUrl = await uploadToIPFS(prescription, contract, address);
+      console.log("Prescription URI:", ipfsUrl);
+
       setIpfsLink(ipfsUrl);
-      const prescriptionURI = `https://ipfs.io/ipfs/${ipfsUrl}`;
-      console.log("Prescription URI:", prescriptionURI);
+
+      console.log("Prescription URI:", ipfsUrl);
       console.log("Patient ID:", prescription.patientId);
       console.log("Doctor ID:", prescription.doctorId);
-      
+
       try {
+        console.log("Minting NFT with Prescription...", ipfsUrl);
+
         const tx = await contractNFT.mintPrescription(
           prescription.patientId,
-          prescriptionURI
+          ipfsUrl,
+          20000000
         );
         await tx.wait();
         console.log("Prescription NFT uploaded successfully");
@@ -78,6 +109,16 @@ const AddPrescription = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    const fetch = async () => {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKENDLINK}/fetchData`,
+        { walletAddress: prescription.doctorId }
+      );
+      console.log(response.data.name);
+    };
+    fetch();
+  }, []);
 
   return (
     <div className="max-w-lg mx-auto bg-white p-6 rounded-xl shadow-md border mt-10">
@@ -97,8 +138,21 @@ const AddPrescription = () => {
             placeholder="Enter Patient ID"
           />
         </div>
-
         <div>
+          <label className="block text-gray-600 font-medium">
+            Patient Name
+          </label>
+          <input
+            type="text"
+            name="patientId"
+            value={prescription.patientName}
+            // onChange={fetchPName}
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter Patient Name"
+          />
+        </div>
+
+        {/* <div>
           <label className="block text-gray-600 font-medium">Doctor ID</label>
           <input
             type="text"
@@ -109,6 +163,17 @@ const AddPrescription = () => {
             placeholder="Enter Doctor ID"
           />
         </div>
+        <div>
+          <label className="block text-gray-600 font-medium">Doctor Name</label>
+          <input
+            type="text"
+            name="doctorId"
+            value={prescription.doctorName}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter Doctor ID"
+          />
+        </div> */}
       </div>
 
       <h3 className="text-lg font-semibold mt-6 mb-2">Medicines</h3>

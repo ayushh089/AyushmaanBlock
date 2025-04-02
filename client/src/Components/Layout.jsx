@@ -45,6 +45,12 @@ const Layout = () => {
           >
             📅 Appointments
           </Link>
+          <Link
+            to="/prescription"
+            className="text-gray-700 hover:font-extrabold font-medium px-4 border-r border-white"
+          >
+            📅 Prescription
+          </Link>
 
         </div>
       </nav>

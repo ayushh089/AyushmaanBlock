@@ -4,10 +4,8 @@ import {
   View,
   Document,
   StyleSheet,
-  PDFDownloadLink,
   Image,
 } from "@react-pdf/renderer";
-import signature from "../assets/signature.png";
 
 const styles = StyleSheet.create({
   page: { padding: 20, fontSize: 12 },
@@ -45,19 +43,41 @@ const styles = StyleSheet.create({
 const PrescriptionPDF = ({ details }) => (
   <Document>
     <Page size="A4" style={styles.page}>
-      <Text style={styles.header}>Doctor’s Prescription</Text>
+      <Text style={styles.header}>Fortis Escort</Text>
 
+      {/* Patient & Doctor Info */}
       <View style={styles.infoBlock}>
-        <Text style={styles.label}> Patient ID:</Text>
-        <Text>{details.patientId}</Text>
-        <Text style={{ marginTop: 5 }} style={styles.label}> Doctor ID:</Text>
-        <Text>{details.doctorId}</Text>
-        <Text style={{ marginTop: 5 }} style={styles.label}> Date:</Text>
-        <Text>{new Date(details.timestamp).toLocaleDateString()}</Text>
+        <View style={styles.row}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.label}>Patient Name:</Text>
+            <Text>{details.patientName || "N/A"}</Text>
+          </View>
+          <View style={{ flex: 1, alignItems: "flex-end" }}>
+            <Text style={styles.label}>Patient ID:</Text>
+            <Text>{details.patientId}</Text>
+          </View>
+        </View>
+
+        <View style={styles.row}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.label}>Doctor Name:</Text>
+            <Text>{details.doctorName || "N/A"}</Text>
+          </View>
+          <View style={{ flex: 1, alignItems: "flex-end" }}>
+            <Text style={styles.label}>Doctor ID:</Text>
+            <Text>{details.doctorId}</Text>
+          </View>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Date:</Text>
+          <Text>{new Date(details.timestamp).toLocaleDateString()}</Text>
+        </View>
       </View>
 
       <Text style={styles.line}></Text>
 
+      {/* Prescription Details */}
       <Text style={styles.prescriptionHeader}>Prescribed Medicines:</Text>
       {details.medicines.map((med, index) => (
         <View key={index} style={styles.medicineRow}>
@@ -70,8 +90,9 @@ const PrescriptionPDF = ({ details }) => (
 
       <Text style={styles.line}></Text>
 
+      {/* Digital Signature */}
       <View style={styles.section}>
-        <Text style={styles.label}> Digital Signature / Hash:</Text>
+        <Text style={styles.label}>Digital Signature / Hash:</Text>
         <Text>{details.signature}</Text>
         {details.signatureImage && (
           <Image src={details.signatureImage} style={styles.signature} />

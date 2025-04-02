@@ -20,7 +20,7 @@ async function main() {
   const prescriptionRegistry = await PrescriptionRegistry.deploy(userRegistryAddress);
   const pharmacyVerification = await PharmacyVerification.deploy(userRegistryAddress);
   const medicalRecords = await MedicalRecords.deploy(userRegistryAddress);
-  const prescriptionNFT = await PrescriptionNFT.deploy();
+  const prescriptionNFT = await PrescriptionNFT.deploy(userRegistryAddress,deployer.address);
 
   await Promise.all([
     prescriptionRegistry.waitForDeployment(),
