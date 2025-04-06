@@ -5,11 +5,10 @@ config();
 
 const registrationHandler = async (req, res) => {
   try {
-    const payload = req.body.offChainData;
+    const payload = req.body.offChainData || req.body;
     console.log("Payload:", payload);
-    
 
-    if (!payload || !payload.wallet_address || !payload.name || !payload.role  ) {
+    if (!payload || !payload.wallet_address || !payload.name || !payload.role) {
       return res
         .status(responseCode.badRequest)
         .json({ msg: "Missing required fields" });
@@ -17,6 +16,8 @@ const registrationHandler = async (req, res) => {
 
     const validRoles = ["patient", "doctor", "admin", "pharmacist"];
     if (!validRoles.includes(payload.role)) {
+      console.log("Invalid role:", payload.role);
+
       return res.status(responseCode.badRequest).json({ msg: "Invalid role" });
     }
 
@@ -36,14 +37,10 @@ const registrationHandler = async (req, res) => {
             RETURNING id;
         `;
 
-    const values = [
-      payload.wallet_address,
-      payload.name,
-      payload.role
-    ];
+    const values = [payload.wallet_address, payload.name, payload.role];
     // const query = `
-    //         INSERT INTO users (wallet_address, name, email, phone, role, date_of_birth, gender) 
-    //         VALUES ($1, $2, $3, $4, $5, $6, $7) 
+    //         INSERT INTO users (wallet_address, name, email, phone, role, date_of_birth, gender)
+    //         VALUES ($1, $2, $3, $4, $5, $6, $7)
     //         RETURNING id;
     //     `;
 
@@ -58,7 +55,7 @@ const registrationHandler = async (req, res) => {
     // ];
 
     const newUser = await Client.query(query, values);
-console.log("Hey",newUser);
+    console.log("Hey", newUser);
 
     return res.status(responseCode.created).json({
       msg: "User registered successfully",
