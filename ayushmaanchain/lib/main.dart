@@ -1,3 +1,7 @@
+import 'package:ayushmaanchain/service_provider/prescription_nft_provider.dart';
+import 'package:ayushmaanchain/service_provider/user_registry_provider.dart';
+import 'package:ayushmaanchain/verification.dart';
+import 'package:ayushmaanchain/view_pdf.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -15,6 +19,10 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => UserRegistryProvider()..init()),
+        ChangeNotifierProvider(
+          create: (_) => PrescriptionNftProvider()..init(),
+        ),
       ],
       child: const MyApp(),
     ),
@@ -28,15 +36,18 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Consumer<AuthProvider>(
-        builder: (context, authProvider, _) {
-          return authProvider.isLoggedIn ? const Home() : const Signup();
-        },
-      ),
+      // home: Consumer<AuthProvider>(
+      //   builder: (context, authProvider, _) {
+      //     return authProvider.isLoggedIn ? const Home() : const Signup();
+      //   },
+      // ),
+      initialRoute: '/home',
       routes: {
         '/signup': (context) => const Signup(),
         '/home': (context) => const Home(),
         '/login': (context) => const Login(),
+        '/verification': (context) => const Verification(),
+        '/view_pdf': (context) =>  ViewPdf(),
       },
     );
   }

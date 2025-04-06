@@ -92,7 +92,7 @@ const Prescription = () => {
                     </td>
                     <td className="border p-3 flex justify-center">
                       <QRCodeCanvas
-                        value={`${import.meta.env.VITE_FRONTENDLINK}/verify?tokenid=${nft.tokenId}`}
+                        value={nft.tokenId}
                         size={80}
                         className="mt-2"
                       />

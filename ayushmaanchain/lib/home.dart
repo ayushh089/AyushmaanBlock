@@ -11,46 +11,96 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  String qrCodeResult = "Scan a QR code";
+  String qrCodeResult = "";
+
   Future<void> scanQRCode() async {
     final result = await BarcodeScanner.scan();
     if (result.type == ResultType.Barcode) {
       setState(() {
         qrCodeResult = result.rawContent;
+        Navigator.pushNamed(context, "/verification", arguments: qrCodeResult);
       });
     } else if (result.type == ResultType.Error) {
       setState(() {
-        qrCodeResult = "Error";
+        qrCodeResult = "Error scanning QR";
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // final userData = Provider.of<AuthProvider>(context);
     final userData = Provider.of<AuthProvider>(context);
-    return Scaffold(
-      appBar: AppBar(title: const Text("Home")),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text("Welcome to the Home Pagea! ${userData.name}---"),
-            Text("Wallet Address: ${userData.walletAddress}"),
-            Text("Role: ${userData.role}"),
 
-            ElevatedButton(
-              onPressed: scanQRCode,
-              child: const Text("Scan QR Code"),
-            ),
-            Text(qrCodeResult, style: const TextStyle(fontSize: 20)),
-            TextButton(
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/login');
-              },
-              child: Text("Logout"),
-            ),
-          ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Dashboard"),
+        centerTitle: true,
+        backgroundColor: Colors.teal,
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Card(
+                elevation: 6,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        "Welcome, ${userData.name} 👋",
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ListTile(
+                        leading: const Icon(Icons.account_balance_wallet),
+                        title: const Text("Wallet Address"),
+                        subtitle: Text(userData.walletAddress),
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.verified_user),
+                        title: const Text("Role"),
+                        subtitle: Text(userData.role),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
+              ElevatedButton.icon(
+                onPressed: scanQRCode,
+                icon: const Icon(Icons.qr_code_scanner),
+                label: const Text("Scan QR Code"),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
+                  textStyle: const TextStyle(fontSize: 16),
+                  backgroundColor: Colors.teal,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/login');
+                },
+                child: const Text("Logout"),
+              ),
+            ],
+          ),
         ),
       ),
     );

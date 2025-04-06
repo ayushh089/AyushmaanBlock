@@ -21,7 +21,6 @@ export default function Signup() {
     userType: "patient",
   });
 
-  // Debounced handleChange
   const handleChange = debounce((e) => {
     const { name, value } = e.target;
 

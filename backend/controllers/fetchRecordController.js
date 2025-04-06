@@ -7,6 +7,8 @@ const ethers = require("ethers");
 config();
 
 const fetchRecordController = async (req, res) => {
+  console.log("hey there from fetchRecordController");
+  
   const { walletAddress } = req.body;
   if (!walletAddress) {
     return res.status(400).json({ msg: "Missing required fields" });

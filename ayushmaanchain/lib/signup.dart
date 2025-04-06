@@ -1,9 +1,12 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
+import 'package:ayushmaanchain/service_provider/user_registry_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:provider/provider.dart';
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
@@ -18,45 +21,66 @@ class _SignupState extends State<Signup> {
 
   String backendLink = dotenv.env["BACKEND_LINK"] ?? "https://default-link.com";
 
-Future<void> registerUser() async {
-  try {
-    print("Registering user with wallet address: $wallet_address");
-    print("Selected role: $selectedRole");
-    print("Name: ${nameController.text}");
-    print("Backend link: $backendLink/register");
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<UserRegistryProvider>(context, listen: false).init();
+    });
+  }
 
-    final response = await http.post(
-      Uri.parse("$backendLink/register"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "wallet_address": wallet_address,
-        "name": nameController.text,
-        "role": selectedRole,
-      }),
-    );
+  Future<void> registerUser() async {
+    final provider = Provider.of<UserRegistryProvider>(context, listen: false);
 
-    final data = jsonDecode(response.body);
-
-    if (response.statusCode == 201) {
-      print("Registration successful: ${data['msg']}");
+    if (!provider.initialized) {
+      print("Service not initialized yet");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Signup successful!")),
+        SnackBar(content: Text("Initializing... please wait a moment.")),
       );
-      Navigator.pushReplacementNamed(context, '/login');
-    } else {
-      print("Signup failed: ${data['msg']}");
+      return;
+    }
+    final userRegister = provider.service;
+
+    try {
+      print("Registering user with wallet address: $wallet_address");
+      print("Selected role: $selectedRole");
+      print("Name: ${nameController.text}");
+      print("Backend link: $backendLink/register");
+
+      final response = await http.post(
+        Uri.parse("$backendLink/register"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "wallet_address": wallet_address,
+          "name": nameController.text,
+          "role": selectedRole,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 201) {
+        print("Registration successful: ${data['msg']}");
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Signup successful!")));
+        await userRegister.registerUser(selectedRole); // role from dropdown
+        print("Registered on chain");
+
+        Navigator.pushReplacementNamed(context, '/login');
+      } else {
+        print("Signup failed: ${data['msg']}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['message'] ?? "Signup failed")),
+        );
+      }
+    } catch (e) {
+      print("Error during signup: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(data['message'] ?? "Signup failed")),
+        SnackBar(content: Text("An error occurred. Please try again.")),
       );
     }
-  } catch (e) {
-    print("Error during signup: $e");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("An error occurred. Please try again.")),
-    );
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
