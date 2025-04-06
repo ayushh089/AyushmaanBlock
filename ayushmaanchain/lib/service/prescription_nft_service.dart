@@ -72,10 +72,10 @@ class PrescriptionNftService extends BlockchainService {
         toBlock: BlockNum.current(),
         address: contract.address,
         topics: [
-          [eventHash], // event signature
-          [], // doctor
-          [], // patient
-          [tokenTopic], // tokenId
+          [eventHash], 
+          [], 
+          [], 
+          [tokenTopic], 
         ],
       ),
     );
