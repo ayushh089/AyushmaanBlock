@@ -36,18 +36,18 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      // home: Consumer<AuthProvider>(
-      //   builder: (context, authProvider, _) {
-      //     return authProvider.isLoggedIn ? const Home() : const Signup();
-      //   },
-      // ),
-      initialRoute: '/home',
+      home: Consumer<AuthProvider>(
+        builder: (context, authProvider, _) {
+          return authProvider.isLoggedIn ? const Home() : const Signup();
+        },
+      ),
+      // initialRoute: '/home',
       routes: {
         '/signup': (context) => const Signup(),
         '/home': (context) => const Home(),
         '/login': (context) => const Login(),
         '/verification': (context) => const Verification(),
-        '/view_pdf': (context) =>  ViewPdf(),
+        '/view_pdf': (context) => ViewPdf(),
       },
     );
   }
