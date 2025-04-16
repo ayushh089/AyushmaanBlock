@@ -4,12 +4,13 @@ import { Buffer } from "buffer";
 import { ToastContainer, toast } from "react-toastify";
 window.Buffer = Buffer;
 import { useState } from "react";
-import { ethers, getBytes } from "ethers";
+import { ethers } from "ethers";
 
-const { solidityPackedKeccak256, JsonRpcProvider } = ethers;
+const {  JsonRpcProvider } = ethers;
 
 import useDrugNFT from "../../hooks/useDrugNFT";
 import { uploadDrugMetadataToIPFS } from "../../utils/uploadBatchMetadata";
+import { generateQRCodesAndDownload } from "../../utils/generateQRCodesAndDownload";
 
 const CreateDrug = () => {
   const { contract, account } = useDrugNFT();
@@ -34,58 +35,46 @@ const CreateDrug = () => {
     }));
   };
 
+
+  
   const handleUpload = async () => {
     try {
       console.log("Uploading drug data to IPFS...");
       setLoading(true);
-
+  
       const stripCount = parseInt(drugData.stripNo);
       const batchId = drugData.manfCode + Date.now().toString(16).slice(-6);
-      console.log("Batch ID:", batchId);
-
-      const stripIDs = Array.from(
-        { length: stripCount },
-        (_, i) => `${batchId}-${i + 1}`
-      );
-      console.log("Strip IDs:", stripIDs);
-
+      const stripIDs = Array.from({ length: stripCount }, (_, i) => `${batchId}-${i + 1}`);
+  
       const leaves = stripIDs.map((id) => keccak256(id));
-      console.log(
-        "Leaves:",
-        leaves.map((x) => x.toString("hex"))
-      );
-
       const merkleTree = new MerkleTree(leaves, keccak256, { sortPairs: true });
-
       const merkleRoot = merkleTree.getHexRoot();
-      console.log("Merkle Root:", merkleRoot);
-      // console.log(
-      //   "Leaves:",
-      //   leaves.map((x) => x.toString("hex"))
-      // );
-
+  
       const metadata = {
         ...drugData,
         manufacturer: account,
         stripIDs,
         merkleRoot,
       };
-
-      const ipfsUrl = await uploadDrugMetadataToIPFS(
-        metadata,
-        contract,
-        account
-      );
+  
+      const ipfsUrl = await uploadDrugMetadataToIPFS(metadata, contract, account);
       setIpfsLink(ipfsUrl);
 
-      console.log("Calling contract to mint batch...");
-      
+  
       const tx = await contract.mintBatch(batchId, merkleRoot, ipfsUrl);
-      await tx.wait();
-      console.log("Transaction Hash:", tx)
-      
-
+      const receipt = await tx.wait();
+      const event = receipt.logs
+        .map(log => contract.interface.parseLog(log))
+        .find(parsedLog => parsedLog.name === "BatchMinted");
+      console.log("Event:", event);
+      const tokenId = event?.args?.tokenId.toString();
+      console.log("Batch minted successfully:", tokenId);
+  
       toast.success(`${stripCount} Drug NFTs minted successfully!`);
+  
+      // 🧠 Generate QR Codes & Excel & Zip
+      await generateQRCodesAndDownload(tokenId, stripIDs);
+  
     } catch (error) {
       console.error("Error uploading drug data:", error.message);
       toast.error("Failed to create Drug NFTs: " + error.message);
@@ -93,6 +82,7 @@ const CreateDrug = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg border mt-12 space-y-6 transition-all duration-300">
