@@ -35,30 +35,9 @@ const useAccessControl = () => {
     connectToBlockchain();
   }, []);
 
-  const assignRole = async (roleName, userAddress) => {
-    if (!contract) return;
 
-    try {
-      let tx;
-      if (roleName === "Manufacturer") {
-        tx = await contract.addManufacturer(userAddress);
-      } else if (roleName === "Distributor") {
-        tx = await contract.addDistributor(userAddress);
-      } else if (roleName === "Pharmacy") {
-        tx = await contract.addPharmacy(userAddress);
-      } else {
-        throw new Error("Invalid role name");
-      }
 
-      await tx.wait();
-      alert(`${roleName} role assigned to ${userAddress}`);
-    } catch (error) {
-      console.error("Error assigning role:", error);
-      alert("Failed to assign role. Check console.");
-    }
-  };
-
-  return { contract, account, assignRole };
+  return { contract, account };
 };
 
 export default useAccessControl;

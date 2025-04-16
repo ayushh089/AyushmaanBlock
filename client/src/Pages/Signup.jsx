@@ -164,6 +164,11 @@ export default function Signup() {
           <option value="patient">Patient</option>
           <option value="doctor">Doctor</option>
           <option value="pharmacist">Pharmacy</option>
+          <option value="admin">Admin</option>
+          <option value="manufacturer">Manufacturer</option>
+          <option value="distributor">Distributor</option>
+          
+
         </select>
 
         <button

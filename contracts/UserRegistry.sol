@@ -9,7 +9,7 @@ contract UserRegistry {
 
     mapping(address => User) public users;
     address[] public doctors;
-    address[] public pharmacists; 
+    address[] public pharmacists;
 
     event UserRegistered(address indexed user, string userType);
 
@@ -17,9 +17,16 @@ contract UserRegistry {
         require(!users[msg.sender].registered, "User already registered");
         require(
             keccak256(abi.encodePacked(_userType)) == keccak256("patient") ||
-            keccak256(abi.encodePacked(_userType)) == keccak256("doctor") ||
-            keccak256(abi.encodePacked(_userType)) == keccak256("hospital") ||
-            keccak256(abi.encodePacked(_userType)) == keccak256("pharmacist"),
+                keccak256(abi.encodePacked(_userType)) == keccak256("doctor") ||
+                keccak256(abi.encodePacked(_userType)) ==
+                keccak256("hospital") ||
+                keccak256(abi.encodePacked(_userType)) ==
+                keccak256("pharmacist") ||
+                keccak256(abi.encodePacked(_userType)) ==
+                keccak256("manufacturer") ||
+                keccak256(abi.encodePacked(_userType)) ==
+                keccak256("distributor") ||
+                keccak256(abi.encodePacked(_userType)) == keccak256("admin"),
             "Invalid user type"
         );
 
@@ -27,7 +34,9 @@ contract UserRegistry {
 
         if (keccak256(abi.encodePacked(_userType)) == keccak256("doctor")) {
             doctors.push(msg.sender);
-        } else if (keccak256(abi.encodePacked(_userType)) == keccak256("pharmacist")) {
+        } else if (
+            keccak256(abi.encodePacked(_userType)) == keccak256("pharmacist")
+        ) {
             pharmacists.push(msg.sender);
         }
 
@@ -43,11 +52,15 @@ contract UserRegistry {
     }
 
     function isDoctor(address _user) external view returns (bool) {
-        return keccak256(abi.encodePacked(users[_user].userType)) == keccak256("doctor");
+        return
+            keccak256(abi.encodePacked(users[_user].userType)) ==
+            keccak256("doctor");
     }
 
     function isPharmacist(address _user) external view returns (bool) {
-        return keccak256(abi.encodePacked(users[_user].userType)) == keccak256("pharmacist");
+        return
+            keccak256(abi.encodePacked(users[_user].userType)) ==
+            keccak256("pharmacist");
     }
 
     function getDoctors() external view returns (address[] memory) {

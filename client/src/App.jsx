@@ -16,6 +16,12 @@ import Prescription from "./Pages/Patient/Prescription";
 import Verification from "./Pages/Verification";
 import Dispensed from "./Pages/Pharmacy/Dispensed";
 import PharmacistLayout from "./Components/PharmacistLayout";
+import AdminLayout from "./Components/AdminLayout";
+import AssignRole from "./Pages/Admin/AssignRole";
+import ManufacturerLayout from "./Components/ManufacturerLayout";
+import CreateDrug from "./Pages/Manufacturer/CreateDrug";
+import DrugInventory from "./Pages/Manufacturer/DrugInventory";
+import VerifyDrug from "./Pages/Manufacturer/VerifyDrug";
 
 function App() {
   return (
@@ -40,6 +46,10 @@ function MainContent() {
           <DoctorLayout />
         ) : user.role === "pharmacist" ? (
           <PharmacistLayout />
+        ) : user.role === "admin" ? (
+          <AdminLayout />
+        ) : user.role === "manufacturer" ? (
+          <ManufacturerLayout />
         ) : null
       ) : null}
 
@@ -66,6 +76,11 @@ function MainContent() {
               <Route path="/prescription" element={<Prescription />} />
               <Route path="/verify" element={<Verification />} />
               <Route path="/dispensed" element={<Dispensed />} />
+              <Route path="/assign-role" element={<AssignRole />} />
+              <Route path="/create-drug" element={<CreateDrug />} />
+              <Route path="/drug-inventory" element={<DrugInventory />} />
+              <Route path="/verify-drug" element={<VerifyDrug />} />
+
             </>
           )}
         </Routes>

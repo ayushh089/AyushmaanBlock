@@ -3,180 +3,95 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 import "./UserAccessControl.sol";
 
 contract DrugNFT is ERC721URIStorage {
+    using ECDSA for bytes32;
+
     UserAccessControl public userAccessControl;
 
     constructor(address _userAccessControl) ERC721("DrugNFT", "DRUG") {
         userAccessControl = UserAccessControl(_userAccessControl);
     }
 
-    modifier onlyManufacturer() {
-        require(
-            userAccessControl.isManufacturer(msg.sender),
-            "Only manufacturers can mint drugs"
-        );
-        _;
-    }
-
-    modifier onlyDistributor() {
-        require(
-            userAccessControl.isDistributor(msg.sender),
-            "Only distributors can mint drugs"
-        );
-        _;
-    }
-
-    modifier onlyPharmacy() {
-        require(
-            userAccessControl.isPharmacy(msg.sender),
-            "Only pharmacies can mint drugs"
-        );
-        _;
-    }
-
-    struct DrugInfo {
-        string drugName;
-        string batchId;
-        uint256 manufactureDate;
-        uint256 expiryDate;
-        address currentOwner;
-        string status;
-    }
-
-    struct DrugHistory {
-        address owner;
-        string status;
+    struct Batch {
+        bytes32 merkleRoot;
+        string metadataURI;
+        address manufacturer;
         uint256 timestamp;
     }
 
-    mapping(uint256 => DrugInfo) public drugInfo;
-    mapping(uint256 => DrugHistory[]) public drugHistory;
-    mapping(uint256 => bool) public drugExists;
+    mapping(uint256 => Batch) public batches;
+    mapping(uint256 => bool) public isBatchMinted;
 
-    modifier isDrug(uint256 tokenId) {
-        require(drugExists[tokenId], "Drug does not exist");
-        _;
-    }
-
-    event DrugMinted(
-        address indexed manufacturer,
-        string drugName,
-        uint256 indexed tokenId
-    );
-    event DrugTransferred(
-        address indexed from,
-        address indexed to,
-        uint256 indexed tokenId
-    );
-    event DrugStatusUpdated(
-        uint256 indexed tokenId,
-        address indexed to,
-        string status,
-        uint256 timestamp
-    );
-    event DrugHistoryUpdated(
-        uint256 indexed tokenId,
-        address indexed owner,
-        string status,
-        uint256 timestamp
+    event BatchMinted(
+        uint256 tokenId,
+        string batchId,
+        bytes32 merkleRoot,
+        string metadataURI,
+        address manufacturer
     );
 
-    function mintDRUG(
-        string memory drugName,
-        string memory manfCode,
-        string memory productCode,
-        string memory batchDate,
-        uint256 stripNo,
-        uint256 manufactureDate,
-        uint256 expiryDate,
-        string memory tokenURI
-    ) public onlyManufacturer returns (uint256) {
-        uint256 tokenId = uint256(
-            keccak256(
-                abi.encodePacked(
-                    manfCode,
-                    "-",
-                    productCode,
-                    "-",
-                    batchDate,
-                    "-",
-                    stripNo
-                )
-            )
-        );
+    function mintBatch(
+        string memory batchId,
+        bytes32 merkleRoot,
+        string memory metadataURI
+    ) public returns (uint256) {
+        uint256 tokenId = uint256(keccak256(abi.encodePacked(batchId)));
+        require(!isBatchMinted[tokenId], "Batch already exists");
+
         _safeMint(msg.sender, tokenId);
-        _setTokenURI(tokenId, tokenURI);
+        _setTokenURI(tokenId, metadataURI);
 
-        drugInfo[tokenId] = DrugInfo(
-            drugName,
-            batchDate,
-            manufactureDate,
-            expiryDate,
-            msg.sender,
-            "Manufactured"
-        );
-        drugHistory[tokenId].push(
-            DrugHistory(msg.sender, "Manufactured", block.timestamp)
-        );
+        batches[tokenId] = Batch({
+            merkleRoot: merkleRoot,
+            metadataURI: metadataURI,
+            manufacturer: msg.sender,
+            timestamp: block.timestamp
+        });
+        isBatchMinted[tokenId] = true;
 
-        emit DrugMinted(msg.sender, drugName, tokenId);
-        emit DrugHistoryUpdated(
-            tokenId,
-            msg.sender,
-            "Manufactured",
-            block.timestamp
-        );
-        emit DrugStatusUpdated(tokenId, msg.sender, "Manufactured", block.timestamp);
-        drugExists[tokenId] = true;
-
+        emit BatchMinted(tokenId, batchId, merkleRoot, metadataURI, msg.sender);
         return tokenId;
     }
 
-    function getDrugInfo(
-        uint256 tokenId
-    ) public view isDrug(tokenId) returns (DrugInfo memory) {
-        return drugInfo[tokenId];
+    function getBatch(uint256 tokenId) public view returns (Batch memory) {
+        require(isBatchMinted[tokenId], "Batch does not exist");
+        return batches[tokenId];
     }
 
-    function getHistory(
-        uint256 tokenId
-    ) public view isDrug(tokenId) returns (DrugHistory[] memory) {
-        return drugHistory[tokenId];
+    function isBatchExists(string memory batchId) public view returns (bool) {
+        uint256 tokenId = uint256(keccak256(abi.encodePacked(batchId)));
+        return isBatchMinted[tokenId];
     }
 
-    function isApprovedOrOwner(
-        address spender,
-        uint256 tokenId
-    ) internal view returns (bool) {
-        address owner = ownerOf(tokenId);
-        return (spender == owner ||
-            getApproved(tokenId) == spender ||
-            isApprovedForAll(owner, spender));
+    function getBatchId(uint256 tokenId) public view returns (string memory) {
+        require(isBatchMinted[tokenId], "Batch does not exist");
+        return
+            string(abi.encodePacked("Batch ID: ", Strings.toString(tokenId)));
     }
 
-    function transferStrip(
+    // ✅ New: Verify Strip Using Merkle Proof and Signature
+    function verifyStrip(
         uint256 tokenId,
-        address to,
-        string memory newStatus
-    ) public {
-        require(isApprovedOrOwner(msg.sender, tokenId), "Not authorized");
-        _transfer(msg.sender, to, tokenId);
+        string memory stripID,
+        bytes32[] calldata proof
+    ) external view returns (bool) {
+     
+        require(isBatchMinted[tokenId], "Batch not found");
 
-        drugHistory[tokenId].push(
-            DrugHistory({
-                owner: to,
-                status: newStatus,
-                timestamp: block.timestamp
-            })
-        );
-        drugInfo[tokenId].currentOwner = to;
-        drugInfo[tokenId].status = newStatus;
-        emit DrugTransferred(msg.sender, to, tokenId);
+        Batch memory batch = batches[tokenId];
 
-        emit DrugStatusUpdated(tokenId, to, newStatus, block.timestamp);
-        emit DrugHistoryUpdated(tokenId, to, newStatus, block.timestamp);
+        // Step 1: Merkle Proof Check
+        bytes32 leaf = keccak256(abi.encodePacked(stripID));
+        bool isValidProof = MerkleProof.verify(proof, batch.merkleRoot, leaf);
+        require(isValidProof, "Invalid Merkle Proof");
+
+        // If Merkle proof is valid, return true
+        return true;
     }
 }
