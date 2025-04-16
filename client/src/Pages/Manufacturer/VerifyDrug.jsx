@@ -6,7 +6,7 @@ import useDrugNFT from "../../hooks/useDrugNFT";
 
 const VerifyDrug = () => {
   const [batchId, setBatchId] = useState("");
-  const {contract} = useDrugNFT(); // Assuming you have a hook to get the contract instance
+  const {contract} = useDrugNFT(); 
   const [stripID, setStripID] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
@@ -39,10 +39,10 @@ const VerifyDrug = () => {
 
 
       const isValid = await contract.verifyStrip(batchId, stripID, proof);
-      setResult(isValid ? "✅ Valid Strip! Genuine." : "❌ Invalid Strip!");
+      setResult(isValid ? "Valid Strip! Genuine." : "Invalid Strip!");
     } catch (err) {
       console.error(err);
-      setResult("❌ Verification Failed! Check ID or Network.");
+      setResult("Verification Failed! Check ID or Network.");
     }
     setLoading(false);
   };
