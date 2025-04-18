@@ -72,6 +72,7 @@ flutter:
     - assets/contract/MedicalRecords.json
     - assets/contract/UserRegistry.json
     - assets/contract/PrescriptionNFT.json
+    - assets/contract/DrugNFT.json
     - assets/paisa.pdf
     
   #   - images/a_dot_burr.jpeg

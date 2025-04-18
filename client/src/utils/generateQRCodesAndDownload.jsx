@@ -16,14 +16,14 @@ export const generateQRCodesAndDownload = async (tokenId, stripIDs) => {
     const qrFolder = zip.folder("qr_codes");
   
     for (let stripId of stripIDs) {
-      const content = `${tokenId}-${stripId}`;
+      const content = `${tokenId}*&${stripId}`;
       const dataUrl = await QRCode.toDataURL(content);
       const base64 = dataUrl.split(",")[1];
   
-      // Add PNG to zip
+   
       qrFolder.file(`${stripId}.png`, base64, { base64: true });
   
-      // Add row to Excel
+      
       sheet.addRow({
         tokenId,
         stripId,

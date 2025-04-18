@@ -1,6 +1,9 @@
+import 'package:ayushmaanchain/service_provider/drug_nft_provider.dart';
 import 'package:ayushmaanchain/service_provider/prescription_nft_provider.dart';
 import 'package:ayushmaanchain/service_provider/user_registry_provider.dart';
-import 'package:ayushmaanchain/verification.dart';
+import 'package:ayushmaanchain/verify_prescription.dart';
+import 'package:ayushmaanchain/verify_drug.dart';
+
 import 'package:ayushmaanchain/view_pdf.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +26,7 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => PrescriptionNftProvider()..init(),
         ),
+        ChangeNotifierProvider(create: (_) => DrugNftProvider()..init()),
       ],
       child: const MyApp(),
     ),
@@ -48,6 +52,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const Login(),
         '/verification': (context) => const Verification(),
         '/view_pdf': (context) => ViewPdf(),
+        '/verify-drug': (context) => VerifyDrug(),
       },
     );
   }

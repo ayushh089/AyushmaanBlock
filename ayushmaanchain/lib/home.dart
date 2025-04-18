@@ -12,13 +12,28 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   String qrCodeResult = "";
+  String role = "";
 
   Future<void> scanQRCode() async {
+    print("---------------ROle: $role ----------");
     final result = await BarcodeScanner.scan();
     if (result.type == ResultType.Barcode) {
       setState(() {
         qrCodeResult = result.rawContent;
-        Navigator.pushNamed(context, "/verification", arguments: qrCodeResult);
+        if (role == "Pharmacist") {
+          Navigator.pushNamed(
+            context,
+            "/verification",
+            arguments: qrCodeResult,
+          );
+        }
+        else if(role=="Patient"){
+                 Navigator.pushNamed(
+            context,
+            "/verify-drug",
+            arguments: qrCodeResult,  
+          );
+        }
       });
     } else if (result.type == ResultType.Error) {
       setState(() {
@@ -30,6 +45,15 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final userData = Provider.of<AuthProvider>(context);
+  if (userData.role == "doctor") {
+      role = "Doctor";
+    } else if (userData.role == "patient") {
+      role = "Patient";
+    } else if (userData.role == "pharmacist") {
+      role = "Pharmacist";
+    } else {
+      role = "Unknown";
+    }
 
     return Scaffold(
       appBar: AppBar(

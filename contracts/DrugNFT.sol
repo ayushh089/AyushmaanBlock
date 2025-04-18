@@ -75,23 +75,16 @@ contract DrugNFT is ERC721URIStorage {
             string(abi.encodePacked("Batch ID: ", Strings.toString(tokenId)));
     }
 
-    // ✅ New: Verify Strip Using Merkle Proof and Signature
     function verifyStrip(
         uint256 tokenId,
         string memory stripID,
         bytes32[] calldata proof
     ) external view returns (bool) {
-     
         require(isBatchMinted[tokenId], "Batch not found");
-
         Batch memory batch = batches[tokenId];
-
-        // Step 1: Merkle Proof Check
         bytes32 leaf = keccak256(abi.encodePacked(stripID));
         bool isValidProof = MerkleProof.verify(proof, batch.merkleRoot, leaf);
         require(isValidProof, "Invalid Merkle Proof");
-
-        // If Merkle proof is valid, return true
         return true;
     }
 }

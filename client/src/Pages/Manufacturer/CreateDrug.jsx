@@ -71,8 +71,7 @@ const CreateDrug = () => {
       console.log("Batch minted successfully:", tokenId);
   
       toast.success(`${stripCount} Drug NFTs minted successfully!`);
-  
-      // 🧠 Generate QR Codes & Excel & Zip
+
       await generateQRCodesAndDownload(tokenId, stripIDs);
   
     } catch (error) {
