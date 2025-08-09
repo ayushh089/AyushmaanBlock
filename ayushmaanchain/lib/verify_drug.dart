@@ -8,6 +8,7 @@ import 'package:ayushmaanchain/service_provider/drug_nft_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:web3dart/crypto.dart';
+import 'package:logger/logger.dart';
 
 class VerifyDrug extends StatefulWidget {
   const VerifyDrug({super.key});
@@ -24,8 +25,16 @@ class _VerifyDrugState extends State<VerifyDrug> {
   String backendUrl = dotenv.env["BACKEND_LINK"] ?? "https://default-link.com";
 
   bool? isValid;
+  bool isvalidQr = true;
   bool isLoading = true;
 
+  String expiryDate = "";
+  String manufactureDate = "";
+  String drugName = "";
+  String manfCode = "";
+  String description = "";
+
+  var logger = Logger();
   @override
   void initState() {
     super.initState();
@@ -55,17 +64,36 @@ class _VerifyDrugState extends State<VerifyDrug> {
     final drug = provider.service;
     print("-------------QRDTA $qrData-------------");
 
-    final parts = qrData.split("*&");
-    if (parts.length != 2) {
+    final respons = await http.post(
+      Uri.parse('$backendUrl/decryptQR'),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"qrData": qrData}),
+    );
+
+    if (respons.statusCode == 400) {
+      isvalidQr = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("❌ Invalid or tampered QR code")),
+      );
       setState(() {
-        isValid = false;
+        isvalidQr = false;
         isLoading = false;
       });
+      return;
     }
-    print("-------------PARTS $parts-------------");
 
-    final tokenId = BigInt.parse(parts[0].trim());
-    final stripId = parts[1].trim();
+    final dataa = jsonDecode(respons.body);
+
+    final tokenId = BigInt.parse(dataa['tokenId'].trim());
+    final stripId = dataa['stripId'].trim();
+
+    print("-------------TOKEN ID $tokenId-------------");
+    print("-------------STRIP ID $stripId-------------");
+    // logger.i("Info log");
+    // logger.d("Debug log");
+    // logger.w("Warning log");
+    // logger.e("Error log");
+    // logger.t("Trace log");
 
     setState(() {
       tokenid = tokenId.toString();
@@ -96,7 +124,39 @@ class _VerifyDrugState extends State<VerifyDrug> {
     setState(() {
       isValid = result;
       isLoading = false;
+      isvalidQr = true;
+      expiryDate = data['expiryDate'];
+      manufactureDate = data['manufactureDate'];
+      drugName = data['drugName'];
+      manfCode = data['manfCode'];
+      description = data['description'];
     });
+  }
+
+  Widget buildDrugInfo() {
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Drug Details:",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Text("🔹 Name: $drugName"),
+            Text("🔹 Manufactured by: $manfCode"),
+            Text("🔹 Description: $description"),
+            Text("🔹 Manufacture Date: $manufactureDate"),
+            Text("🔹 Expiry Date: $expiryDate"),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -124,57 +184,73 @@ class _VerifyDrugState extends State<VerifyDrug> {
                       ),
                     ],
                   )
-                  : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "Verification Result",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if (isValid == true) ...[
-                        Icon(Icons.verified, color: Colors.green, size: 80),
-                        const SizedBox(height: 10),
+                  : SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
                         const Text(
-                          "Medicine is ORIGINAL ✅",
+                          "Verification Result",
                           style: TextStyle(
-                            fontSize: 22,
-                            color: Colors.green,
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ] else ...[
-                        Icon(Icons.warning, color: Colors.red, size: 80),
-                        const SizedBox(height: 10),
-                        const Text(
-                          "Counterfeit Medicine ❌",
-                          style: TextStyle(
-                            fontSize: 22,
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(height: 20),
+                        if (!isvalidQr) ...[
+                          Icon(Icons.warning, color: Colors.red, size: 80),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Invalid Qr Code ❌",
+                            style: TextStyle(
+                              fontSize: 22,
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ] else if (isValid == true && isvalidQr) ...[
+                          Icon(Icons.verified, color: Colors.green, size: 80),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Medicine is ORIGINAL ✅",
+                            style: TextStyle(
+                              fontSize: 22,
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          buildDrugInfo(),
+                        ] else ...[
+                          Icon(Icons.warning, color: Colors.red, size: 80),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Counterfeit Medicine ❌",
+                            style: TextStyle(
+                              fontSize: 22,
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          buildDrugInfo(),
+                        ],
+                        const SizedBox(height: 40),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/home');
+                          },
+                          child: const Text(
+                            "Go to Home",
+                            style: TextStyle(fontSize: 16),
                           ),
                         ),
                       ],
-                      const SizedBox(height: 40),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/home');
-                        },
-                        child: const Text(
-                          "Go to Home",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
         ),
       ),

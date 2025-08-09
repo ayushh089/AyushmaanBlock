@@ -3,10 +3,11 @@ import axios from "axios";
 import { MerkleTree } from "merkletreejs";
 import keccak256 from "keccak256";
 import useDrugNFT from "../../hooks/useDrugNFT";
+import { decryptPayload } from "../../utils/encryption";
 
 const VerifyDrug = () => {
-  const [batchId, setBatchId] = useState("");
-  const {contract} = useDrugNFT(); 
+  // const [batchId, setBatchId] = useState("");
+  const { contract } = useDrugNFT();
   const [stripID, setStripID] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,29 +17,36 @@ const VerifyDrug = () => {
     setLoading(true);
     setResult("");
     try {
+      const decrypted = decryptPayload(stripID);
+      if (!decrypted || !decrypted.stripId || !decrypted.tokenId) {
+        setResult("❌ Invalid or tampered QR code");
+        return;
+      }
 
-      const batch = await contract.getBatch(batchId);
+      const { tokenId, stripId } = decrypted;
+      console.log("Decrypted Data:", decrypted);
+      console.log("Token ID:", tokenId);
+      console.log("Strip ID:", stripId);
+
+      const batch = await contract.getBatch(tokenId);
       console.log("Batch:", batch[1]);
-      
-      const ipfsURL = batch[1]
+
+      const ipfsURL = batch[1];
 
       const response = await axios.get(ipfsURL);
       console.log("Response:", response.data);
-      
-      const { stripIDs } = response.data;
-      console.log("StripIds",stripIDs);
-      
 
-      const leaves = stripIDs.map(id => keccak256(id));
+      const { stripIDs } = response.data;
+      console.log("StripIds", stripIDs);
+
+      const leaves = stripIDs.map((id) => keccak256(id));
       const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
 
-      const leaf = keccak256(stripID);
+      const leaf = keccak256(stripId);
       const proof = tree.getHexProof(leaf);
-      console.log("prrof",proof);
-      
+      console.log("prrof", proof);
 
-
-      const isValid = await contract.verifyStrip(batchId, stripID, proof);
+      const isValid = await contract.verifyStrip(tokenId, stripId, proof);
       setResult(isValid ? "Valid Strip! Genuine." : "Invalid Strip!");
     } catch (err) {
       console.error(err);
@@ -56,7 +64,7 @@ const VerifyDrug = () => {
       <form onSubmit={handleVerify} className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="flex flex-col">
-            <label className="mb-1 text-gray-700 font-medium">Batch ID</label>
+            {/* <label className="mb-1 text-gray-700 font-medium">Batch ID</label>
             <input
               type="text"
               value={batchId}
@@ -64,7 +72,7 @@ const VerifyDrug = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               placeholder="Enter Batch ID"
               required
-            />
+            /> */}
           </div>
 
           <div className="flex flex-col">

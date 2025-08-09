@@ -238,7 +238,15 @@ class _LoginState extends State<Login> {
                     ),
                     child: const Text("Login", style: TextStyle(fontSize: 16)),
                   ),
+                  
                 ],
+                              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/signup');
+                },
+                child: const Text("Not a user ? SignUp"),
+              ),
               ],
             ),
           ),

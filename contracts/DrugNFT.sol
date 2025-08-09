@@ -27,6 +27,14 @@ contract DrugNFT is ERC721URIStorage {
 
     mapping(uint256 => Batch) public batches;
     mapping(uint256 => bool) public isBatchMinted;
+    mapping(string => bool) public usedStrip;
+
+    event StripVerified(
+        uint256 tokenId,
+        string stripId,
+        address verifier,
+        uint256 timestamp
+    );
 
     event BatchMinted(
         uint256 tokenId,
@@ -79,12 +87,15 @@ contract DrugNFT is ERC721URIStorage {
         uint256 tokenId,
         string memory stripID,
         bytes32[] calldata proof
-    ) external view returns (bool) {
+    ) external  returns (bool) {
         require(isBatchMinted[tokenId], "Batch not found");
+        require(!usedStrip[stripID], "Strip already verified");
         Batch memory batch = batches[tokenId];
         bytes32 leaf = keccak256(abi.encodePacked(stripID));
         bool isValidProof = MerkleProof.verify(proof, batch.merkleRoot, leaf);
+        usedStrip[stripID] = true;
         require(isValidProof, "Invalid Merkle Proof");
+        emit StripVerified(tokenId, stripID, msg.sender, block.timestamp);
         return true;
     }
 }

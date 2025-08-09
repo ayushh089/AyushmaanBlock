@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Signup from "./Pages/Signup";
 import Login from "./Pages/Login";
 import HomePage from "./Pages/HomePage";
@@ -22,12 +22,12 @@ import ManufacturerLayout from "./Components/ManufacturerLayout";
 import CreateDrug from "./Pages/Manufacturer/CreateDrug";
 import DrugInventory from "./Pages/Manufacturer/DrugInventory";
 import VerifyDrug from "./Pages/Manufacturer/VerifyDrug";
+import AyushmaanChainLanding from "./Pages/AyushmaanChainLanding";
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <Navbar />
         <MainContent />
       </Router>
     </AuthProvider>
@@ -36,57 +36,82 @@ function App() {
 
 function MainContent() {
   const { user } = useAuth();
+  console.log("Current User:", user);
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {user ? (
-        user.role === "patient" ? (
-          <Layout />
-        ) : user.role === "doctor" ? (
-          <DoctorLayout />
-        ) : user.role === "pharmacist" ? (
-          <PharmacistLayout />
-        ) : user.role === "admin" ? (
-          <AdminLayout />
-        ) : user.role === "manufacturer" ? (
-          <ManufacturerLayout />
-        ) : null
-      ) : null}
+    <Routes>
+      <Route
+        path="/"
+        element={user ? <Navigate to="/homepage" replace /> : <AyushmaanChainLanding />}
+      />
 
-      <div className="flex justify-center items-center">
-        <Routes>
-          {!user ? (
-            <>
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={<Login />} />
-            </>
-          ) : (
-            <>
-              <Route path="/homepage" element={<HomePage />} />
-              <Route path="/dashboard" element={<PatientDashboard />} />
-              <Route
-                path="/upload-medical-records"
-                element={<MedicalRecords />}
-              />
-              <Route path="/grant-access" element={<GrantAccess />} />
-              <Route path="/revoke-access" element={<RevokeAccess />} />
-              <Route path="/patient-manager" element={<PatientManager />} />
-              <Route path="/my-doctors" element={<MyDoctors />} />
-              <Route path="/prescription" element={<Prescription />} />
-              <Route path="/verify" element={<Verification />} />
-              <Route path="/dispensed" element={<Dispensed />} />
-              <Route path="/assign-role" element={<AssignRole />} />
-              <Route path="/create-drug" element={<CreateDrug />} />
-              <Route path="/drug-inventory" element={<DrugInventory />} />
-              <Route path="/verify-drug" element={<VerifyDrug />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/login" element={<Login />} />
 
-            </>
-          )}
-        </Routes>
-      </div>
-    </div>
+      {user && (
+        <Route
+          path="/*"
+          element={
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900 p-6">
+              <Navbar />
+              <Routes>
+                <Route path="/homepage" element={<Layout><HomePage /></Layout>} />
+
+                {user.role === "patient" && (
+                  <Route path="/patient" element={<Layout />}>
+                    <Route index element={<Navigate to="dashboard" replace />} />
+                    <Route path="dashboard" element={<PatientDashboard />} />
+                    <Route path="medical-records" element={<MedicalRecords />} />
+                    <Route path="grant-access" element={<GrantAccess />} />
+                    <Route path="revoke-access" element={<RevokeAccess />} />
+                    <Route path="my-doctors" element={<MyDoctors />} />
+                    <Route path="prescription" element={<Prescription />} />
+                  </Route>
+                )}
+
+                {user.role === "doctor" && (
+                  <Route path="/doctor" element={<DoctorLayout />}>
+                    <Route index element={<Navigate to="patient-manager" replace />} />
+                    <Route path="patient-manager" element={<PatientManager />} />
+                  </Route>
+                )}
+
+                {user.role === "pharmacist" && (
+                  <Route path="/pharmacist" element={<PharmacistLayout />}>
+                    <Route index element={<Navigate to="verify" replace />} />
+                    <Route path="verify" element={<Verification />} />
+                    <Route path="dispensed" element={<Dispensed />} />
+                  </Route>
+                )}
+
+                {user.role === "admin" && (
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<Navigate to="assign-role" replace />} />
+                    <Route path="assign-role" element={<AssignRole />} />
+                  </Route>
+                )}
+
+                {user.role === "manufacturer" && (
+                  <Route path="/manufacturer" element={<ManufacturerLayout />}>
+                    <Route index element={<Navigate to="create-drug" replace />} />
+                    <Route path="create-drug" element={<CreateDrug />} />
+                    <Route path="drug-inventory" element={<DrugInventory />} />
+                    <Route path="verify-drug" element={<VerifyDrug />} />
+                  </Route>
+                )}
+
+                <Route path="*" element={<Navigate to="/homepage" replace />} />
+              </Routes>
+            </div>
+          }
+        />
+      )}
+
+      {/* Fallback for logged-out */}
+      {!user && <Route path="*" element={<Navigate to="/login" replace />} />}
+    </Routes>
   );
 }
+
 
 export default App;

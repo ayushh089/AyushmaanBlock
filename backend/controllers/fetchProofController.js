@@ -9,7 +9,7 @@ const { default: axios } = require("axios");
 config();
 
 const fetchProofController = async (req, res) => {
-  const { ipfsURL, stripID } = req.body;
+  const { ipfsURL,stripID } = req.body;
   const modifiedIpfsURL = ipfsURL.replace(
     "https://ipfs.io/ipfs/",
     process.env.VITE_PINATA_LINK
@@ -21,7 +21,7 @@ const fetchProofController = async (req, res) => {
     const response = await axios.get(modifiedIpfsURL);
     console.log("Response:", response.data);
 
-    const { stripIDs, merkleRoot } = response.data;
+    const { stripIDs, merkleRoot,manufactureDate,expiryDate,drugName,manfCode,description } = response.data;
 
     console.log("StripIds", stripIDs);
 
@@ -34,10 +34,10 @@ const fetchProofController = async (req, res) => {
       return;
     }
 
-    const proof = tree.getHexProof(leaf);
     const leaf = keccak256(stripID);
+    const proof = tree.getHexProof(leaf);
     console.log("proof", proof);
-    res.json({ proof });
+    res.json({ proof,manufactureDate,expiryDate,drugName,manfCode,description });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Could not generate Merkle proof." });

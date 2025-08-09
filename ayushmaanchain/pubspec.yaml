@@ -48,6 +48,7 @@ dependencies:
   device_info_plus: ^10.1.2
   path_provider: ^2.1.5
   flutter_cached_pdfview: ^0.4.3
+  logger: ^2.5.0
 
 
 dev_dependencies:

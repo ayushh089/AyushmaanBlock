@@ -1,30 +1,16 @@
-import { Link, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const AdminLayout = () => {
   const { user } = useAuth();
 
   return (
-    <div className="bg-gray-100">
-      {/* Top Navbar */}
-      <nav className="bg-green-200 shadow-md py-3">
-        <div className="flex justify-center space-x-0">
-          <Link
-            to="/assign-role"
-            className="text-gray-700 hover:font-extrabold font-medium px-4 border-r border-white"
-          >
-            🏠 Assign Role
-          </Link>
-        
-
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-green-100">
+      {/* Main Content */}
+      <main className="mx-6 mb-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-green-200/50 min-h-[calc(100vh-200px)] p-6">
+          <Outlet />
         </div>
-      </nav>
-
-      {/* Main Content Area */}
-      <main className="p-2 mt-3">
-        {" "}
-        {/* Added padding and margin-top */}
-        <Outlet />
       </main>
     </div>
   );

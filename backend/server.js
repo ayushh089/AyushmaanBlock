@@ -8,6 +8,7 @@ const challengeRouter = require("./routes/challenge");
 const uploadFileRouter = require("./routes/uploadFile");
 const fetchRecordRouter = require("./routes/fetchRecord");
 const fetchProof = require("./routes/fetchProof");
+const decryptQRRouter = require("./routes/decryptQR");
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use("/login", loginRouter);
 app.use("/challenge", challengeRouter);
 app.use("/upload", uploadFileRouter);
 app.use("/fetchData", fetchRecordRouter);
+app.use("/decryptQR",decryptQRRouter)
 app.use("/get-merkle-proof",fetchProof)
 app.listen(5000, () => {
   console.log("Server is running 5000");

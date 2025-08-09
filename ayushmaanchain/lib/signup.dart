@@ -17,7 +17,7 @@ class Signup extends StatefulWidget {
 class _SignupState extends State<Signup> {
   TextEditingController nameController = TextEditingController();
   String selectedRole = "pharmacist";
-  String wallet_address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+  String wallet_address = "0xFABB0ac9d68B0B445fB7357272Ff202C5651694a";
 
   String backendLink = dotenv.env["BACKEND_LINK"] ?? "https://default-link.com";
 
@@ -167,6 +167,16 @@ class _SignupState extends State<Signup> {
                     "Signup",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/login');
+                },
+                child: Text(
+                  "Already have an account? Login",
+                  style: TextStyle(color: Colors.green),
                 ),
               ),
             ],

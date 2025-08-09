@@ -36,7 +36,7 @@ const GrantAccess = () => {
     grantAccess();
   };
   return (
-    <div className="bg-gray-100 flex flex-col items-center justify-center p-4 w-full">
+    <div className=" flex flex-col items-center justify-center p-4 w-full h-screen">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Grant Access</h1>
       <form
         onSubmit={handleSubmit}

@@ -2,10 +2,10 @@ import { pdf } from "@react-pdf/renderer";
 import { zeroPadBytes } from "ethers";
 import PrescriptionPDF from "../Components/PrescriptionPDF";
 
-// This is a regular utility function (not a hook)
+
 export async function uploadToIPFS(details, contract, address, fileName = "prescription.pdf") {
   try {
-    // Generate the PDF Blob
+
     const pdfBlob = await pdf(<PrescriptionPDF details={details} />).toBlob();
     const file = new File([pdfBlob], fileName, {
       type: "application/pdf",

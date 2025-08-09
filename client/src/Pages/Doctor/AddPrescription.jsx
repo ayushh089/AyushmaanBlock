@@ -38,7 +38,7 @@ const AddPrescription = () => {
   };
   useEffect(() => {
     const fetchPatientName = async () => {
-      if (!prescription.patientId) return; // Prevent unnecessary API calls
+      if (!prescription.patientId) return;
 
       try {
         const response = await axios.post(
