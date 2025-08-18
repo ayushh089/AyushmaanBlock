@@ -178,6 +178,6 @@ const AccordionView = ({ groupedRecords }) => (
       </div>
     ))}
   </div>
-);
+); 
 
 export default PatientDashboard;
